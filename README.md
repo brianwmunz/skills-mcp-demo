@@ -55,7 +55,7 @@ lets you see the exact payload without sending anything.
 ## Set up
 
 ```sh
-git clone <this-repo-url> skills-mcp-demo
+git clone https://github.com/brianwmunz/skills-mcp-demo.git
 cd skills-mcp-demo
 cp .env.example .env
 cd mcp-server && npm ci && npm run build && cd ..
