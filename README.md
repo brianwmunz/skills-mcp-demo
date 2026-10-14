@@ -3,6 +3,10 @@
 This is the companion repo for a Skills + MCP Server webinar. 
 If you want to learn more about Skills and MCP Servers, you can use this repo to achieve what was shown in the webinar.
 
+**Watch the webinar:** [AI Agent Skills and MCP Servers: How to Build Both (and When You Need Each)](https://youtu.be/9epduFkbZck)
+
+[![Watch the webinar on YouTube](https://img.youtube.com/vi/9epduFkbZck/maxresdefault.jpg)](https://youtu.be/9epduFkbZck)
+
 You'll build two small pieces and then
 connect them with one prompt:
 

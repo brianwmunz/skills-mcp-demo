@@ -1,5 +1,7 @@
 # Walk yourself through it
 
+Want to see it done first? [Watch the webinar](https://youtu.be/9epduFkbZck), then follow along here.
+
 These are the prompts and steps from the webinar, in order. Each prompt appears once.
 When a step says to run a prompt "again," scroll back up and paste it.
 
