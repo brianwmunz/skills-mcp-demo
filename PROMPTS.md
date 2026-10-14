@@ -1,133 +1,156 @@
-# Live prompts
+# Walk yourself through it
 
-From the run sheet, in order. Start every Claude Code session with
-`scripts/claude.sh` from the repo root so `.env` is loaded.
+These are the prompts and steps from the webinar, in order. Each prompt appears once.
+When a step says to run a prompt "again," scroll back up and paste it.
+
+Before you start, complete [Set up](README.md#set-up) in the README. Run every Claude Code
+session from the repo root with `scripts/claude.sh`. After you change a skill or MCP
+server, `/exit` and start a new session, because Claude Code loads both at startup.
+
+**Stuck?** `scripts/jump.sh <checkpoint>` puts the repo at the finished state of any step,
+using the checkpoint names below. It discards uncommitted changes. See the
+[README](README.md#two-ways-to-use-this-repo).
 
 ---
 
-## Build #1: the skill (target 7 min, hard stop 14:00)
+## Part 1: Teach the agent what a good alert is (a skill)
 
-Start: `scripts/reset.sh b1`, then `scripts/claude.sh`.
+**Start fresh:** `scripts/reset.sh b1`, then `scripts/claude.sh`.
 
-### 1. No-skill baseline (0:00)
+### The baseline prompt
+
+You'll use this prompt twice: once now, without a skill, and once after you write the skill.
 
 ```
 Draft a Slack alert for the event in fixtures/acme-sync-failure.json.
 ```
 
-### Type the frontmatter by hand (1:00)
+**Look for:** the format the agent picks on its own, whether it decides on a severity, and
+whether it copies raw details like the instance ID or error message straight from the event.
 
-Create `.claude/skills/alert-writer/SKILL.md` and type:
+### Write the frontmatter by hand
 
-```
+Create `.claude/skills/alert-writer/SKILL.md` with:
+
+```markdown
 ---
 name: alert-writer
 description: Writes integration-failure alerts for the team's alert channel. Decides whether an event deserves an alert, assigns severity (critical, warning, info), and formats a short, secret-free message. Use when an integration, instance, flow, or execution fails, degrades, retries, or recovers, or when asked to write, draft, or send an alert or incident notice about an integration.
 ---
 ```
 
-Fallback: `scripts/jump.sh b1-frontmatter`
+The `description` is what the agent reads to decide whether to load the skill. Write it
+to say both what the skill does and when to use it.
 
-### 2. Draft the body (2:30)
+*Checkpoint: `b1-frontmatter`*
+
+### Have Claude draft the body
 
 ```
 Fill in the body of .claude/skills/alert-writer/SKILL.md below the frontmatter. Cover: when to alert vs. not; a severity rubric (critical = production plus data not syncing or an auth failure, warning = degraded or retrying, info = recovered or FYI); a fixed four-line message format (what broke, who's affected, impact, suggested next step); and rules: message 500 characters max, title 80 max, lead with the customer and integration, use only facts from the event. If an alert is warranted and a send_alert tool is available, call it. Keep the whole file under 100 lines.
 ```
 
-### Edit one rule by hand (4:00)
+### Make it yours
 
-Add under the rules:
+Read what Claude wrote and change anything that isn't how *your* team works. At minimum,
+add this rule by hand:
 
 ```
 - Never include secrets, tokens, API keys, or raw request/response payloads. Name the error code instead.
 ```
 
-### Validate (4:30)
+Optional: `skills-ref validate .claude/skills/alert-writer`
 
-```
-skills-ref validate .claude/skills/alert-writer
-```
+### Compare
 
-### Prompt 1 again, new session (5:00)
+`/exit`, start `scripts/claude.sh` again, and rerun **the baseline prompt**. Now the agent
+should load `alert-writer`, call this `critical` (production plus a 401 auth failure), and
+use your four-line format.
 
-`/exit`, then `scripts/claude.sh`:
-
-```
-Draft a Slack alert for the event in fixtures/acme-sync-failure.json.
-```
-
-**If it goes sideways:** `scripts/jump.sh b1-done`, then validate and rerun prompt 1.
+*Checkpoint: `b1-done`. Compare yours with the reference skill there.*
 
 ---
 
-## Build #2: the MCP server (target 8 min, hard stop 25:00)
+## Part 2: Give the agent a way to act (an MCP server)
 
-Start: `scripts/reset.sh b2`, then `scripts/claude.sh`.
+**Start here if you skipped Part 1:** `scripts/reset.sh b2`, then `scripts/claude.sh`.
 
-### 3. Implement `send_alert` (1:00)
+### Add the `send_alert` tool
+
+[mcp-server/src/index.ts](mcp-server/src/index.ts) is a working MCP server with no tools.
+Ask Claude to add one:
 
 ```
 In mcp-server/src/index.ts, replace the TODO with a send_alert tool using registerTool. Input schema (zod, strict): severity enum info | warning | critical, title string max 80 chars, message string max 500 chars, integration optional string. The handler POSTs JSON { severity, title, message, integration, sentAt } to process.env.PRISMATIC_ALERT_WEBHOOK_URL and returns a short text result with the HTTP status and any executionId from the response. If ALERT_DRY_RUN=1, skip the POST and return the payload it would have sent. Fail clearly if the URL env var is missing, and never log or echo the URL. Make the tool description specific: it posts to the team's alert channel.
 ```
 
-### Build (4:00)
+**Look for:** the schema enforces the limits the skill only *asks* for, the URL comes
+from the environment so the agent never sees it, and dry run gives you a safe way to test.
 
-```
+### Build it
+
+```sh
 cd mcp-server && npm run build && cd ..
 ```
 
-### Register project-scoped (4:30)
+*Checkpoint: `b2-tool-done`*
+
+### Register it for this project
 
 Keep the **single quotes**. They stop your shell from expanding the variables, so
-`.mcp.json` gets the literal `${...}` text and not the URL.
+`.mcp.json` stores the literal `${...}` text instead of your URL.
 
-```
+```sh
 claude mcp add --scope project alerts -e 'PRISMATIC_ALERT_WEBHOOK_URL=${PRISMATIC_ALERT_WEBHOOK_URL}' -e 'ALERT_DRY_RUN=${ALERT_DRY_RUN:-0}' -- node mcp-server/dist/index.js
-```
-
-```
 cat .mcp.json
 ```
 
-**If it goes sideways:** `scripts/jump.sh b2-tool-done` or `scripts/jump.sh b2-connected`.
+`/exit`, start `scripts/claude.sh`, approve the `alerts` server, and run `/mcp`. You should
+see `alerts` with one tool, `send_alert`.
 
-### New session (5:30)
-
-`/exit`, then `scripts/claude.sh`. Approve the `alerts` server, then:
-
-```
-/mcp
-```
-
-### 4. Payoff (6:00)
-
-```
-Acme's Salesforce sync is failing. Check fixtures/acme-sync-failure.json and alert the team.
-```
-
-Read the tool call aloud before approving it. If the network dies, set
-`ALERT_DRY_RUN=1` in `.env`, restart the session, and show the payload.
+*Checkpoint: `b2-connected`*
 
 ---
 
-## Codex: same skill, same MCP server (after the payoff)
+## Part 3: The payoff
 
-In a terminal at the repo root (exit Claude Code or use another pane):
-
-```
-cp -r .claude/skills/alert-writer .agents/skills/
-```
-
-```
-scripts/codex.sh
-```
-
-Paste the payoff prompt:
+### The payoff prompt
 
 ```
 Acme's Salesforce sync is failing. Check fixtures/acme-sync-failure.json and alert the team.
 ```
 
-Approve the `send_alert` call. The second Slack message should arrive.
+The skill decides what to say, and the MCP tool sends it. Read the tool call before you
+approve it. That approval is your last check before anything leaves your machine.
 
-**If it goes sideways:** `scripts/jump.sh b2-codex` (skill already copied), then `scripts/codex.sh`.
+- **In dry-run mode** (`ALERT_DRY_RUN=1`), the tool returns the exact JSON it would have sent.
+- **For a real send,** set up a destination first:
+  - **Recommended:** [docs/prismatic.md](docs/prismatic.md) (Prismatic flow → Slack)
+  - **Alternative:** [docs/slack-direct.md](docs/slack-direct.md) (straight to Slack)
+
+  Then put the URL in `.env`, set `ALERT_DRY_RUN=0`, restart `scripts/claude.sh`, and run
+  **the payoff prompt** again. A 🔴 alert should appear in Slack.
+
+### Change the event and see what the skill does
+
+Edit `fixtures/acme-sync-failure.json` and run **the payoff prompt** again (dry run works fine):
+
+- Set `instance.environment` to `"sandbox"`. The skill should skip the alert and say why.
+- Remove `recordsPending`. The alert should say "unknown" instead of making up a number.
+
+Run `git checkout fixtures/` to restore the original event.
+
+---
+
+## Bonus: same skill, same server, in Codex
+
+```sh
+mkdir -p .agents/skills
+cp -r .claude/skills/alert-writer .agents/skills/
+scripts/codex.sh
+```
+
+Paste **the payoff prompt** and approve the `send_alert` call. You don't need to change
+the skill or the server. Setup details are in the [README](README.md#bonus-same-skill-and-server-in-codex).
+
+*Checkpoint: `b2-codex`*

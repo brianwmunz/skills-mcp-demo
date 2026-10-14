@@ -1,4 +1,4 @@
-# Codex project config (loaded for trusted projects; scripts/codex.sh trusts this repo).
+# Codex project config (loaded only for projects you have trusted in Codex).
 # Launch with scripts/codex.sh so .env is in the environment.
 
 sandbox_mode = "workspace-write"
