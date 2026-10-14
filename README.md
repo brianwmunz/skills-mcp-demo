@@ -1,6 +1,9 @@
 # Skills + MCP Servers: build an AI alerting agent
 
-This is the companion repo for the webinar. You'll build two small pieces and then
+This is the companion repo for a Skills + MCP Server webinar. 
+If you want to learn more about Skills and MCP Servers, you can use this repo to achieve what was shown in the webinar.
+
+You'll build two small pieces and then
 connect them with one prompt:
 
 1. **A skill** (`.claude/skills/alert-writer/`) that teaches the agent *what* to say:
