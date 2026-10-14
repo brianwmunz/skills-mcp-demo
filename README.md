@@ -119,6 +119,9 @@ where that URL points:
 Import the included integration ([prismatic/webinar-alert-relay.yml](prismatic/webinar-alert-relay.yml)),
 connect it to a Slack incoming webhook, deploy it, and copy its webhook URL into `.env`.
 It takes about 10 minutes.
+You can click through it yourself, or install Prismatic's own
+[agent skills](https://github.com/prismatic-io/agent-skills) and let Claude do the
+import and deploy from inside this repo. The guide covers both.
 
 ### Alternative: straight to Slack → [docs/slack-direct.md](docs/slack-direct.md)
 

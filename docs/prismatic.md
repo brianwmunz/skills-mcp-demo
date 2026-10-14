@@ -12,7 +12,8 @@ send_alert ──POST JSON──▶ Prismatic flow "Send Alert" ──▶ Slack
                           3. Post to Slack   (uses the Slack Webhook connection)
 ```
 
-It takes about 10 minutes.
+It takes about 10 minutes by hand. Or you can have Prismatic's own skills do most of it
+for you (see [Shortcut](#shortcut-let-prismatics-skills-do-the-setup)).
 
 ## Why put Prismatic in the middle?
 
@@ -40,6 +41,69 @@ operational parts in a place built for them:
   npm install -g @prismatic-io/prism
   prism login
   ```
+
+## Shortcut: let Prismatic's skills do the setup
+
+You just built a skill that teaches an agent how *your team* writes alerts. Prismatic
+publishes skills that teach an agent how to *use Prismatic*:
+[prismatic-io/agent-skills](https://github.com/prismatic-io/agent-skills). They use the
+same open Agent Skills format as `alert-writer`, so they work in Claude Code, Codex, and
+other agents.
+
+The skill for this job is **`orby`**. It operates your Prismatic organization through
+the `prism` CLI, so it can import the YAML, publish it, create the customer, and deploy
+the instance (Steps 2–3) from a single prompt. Before it changes anything on the
+platform, it asks you to confirm.
+
+**1. Prerequisites.** Orby needs Prism **v11 or later** and Node 22+:
+
+```sh
+npm install -g @prismatic-io/prism@latest
+prism login
+```
+
+**2. Install the skill** for your user account, not for this repo:
+
+```sh
+npx skills add prismatic-io/agent-skills --skill orby -g -a claude-code
+```
+
+Use `-a codex` for Codex, or leave off `--skill` and `-a` to choose from the full catalog.
+Install it globally (`-g`) because `scripts/reset.sh` and `scripts/jump.sh` run
+`git clean`, which would delete a skill installed inside the repo.
+
+**3. Create the Slack webhook yourself** ([Step 1](#step-1-create-a-slack-incoming-webhook)).
+That URL is a credential. Don't paste it into the chat. You'll enter it in Prismatic's UI.
+
+**4. Open Claude Code at the repo root** (`claude` works here, since you aren't running the
+alert demo yet) and ask:
+
+```
+Use the orby skill to set up the Prismatic side of this repo. Import prismatic/webinar-alert-relay.yml as a new integration, publish it, create a customer named "Webinar Demo", and deploy an instance of the integration for that customer. I'll enter the Slack Webhook connection value myself in the Prismatic UI, so tell me exactly where to put it. When the instance is deployed, give me the command that prints the Send Alert flow's webhook URL instead of showing the URL in this chat.
+```
+
+Read each `prism` command before you approve it. When Orby finishes, continue with
+[Step 4](#step-4-copy-the-webhook-url-into-env) to put the URL in `.env`, then run the
+[Step 5](#step-5-smoke-test) smoke test.
+
+**5. Uninstall Orby before the payoff (recommended).** Orby's description covers
+integration failures and executions, so on the payoff prompt Claude might use it to look
+up "Acme" in your Prismatic organization instead of using `alert-writer` to write the
+alert. Uninstall it until you're done with the demo:
+
+```sh
+npx skills remove -g orby
+```
+
+**Want to go further?** The `prismatic-integrations` skill builds **code-native**
+integrations, written in TypeScript in your repo. Try having it rebuild this relay as
+code instead of YAML. For example:
+"Build a code-native Prismatic integration with a webhook-triggered flow that takes
+{ severity, title, message, integration }, maps severity to an emoji, and posts to a Slack
+incoming webhook connection."
+
+Already using the older **Prismatic Skills plugin for Claude Code**
+(`/plugin install prismatic-skills@prismatic-skills`)? `/prismatic-skills:orby` works the same way.
 
 ## Step 1: Create a Slack incoming webhook
 
