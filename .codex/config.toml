@@ -1,0 +1,26 @@
+# Codex project config (loaded for trusted projects; scripts/codex.sh trusts this repo).
+# Launch with scripts/codex.sh so .env is in the environment.
+
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false  # shell commands can't reach Slack or Prismatic directly
+
+[shell_environment_policy]
+exclude = ["PRISMATIC_ALERT_WEBHOOK_URL", "SLACK_WEBHOOK_URL"]
+
+# Only the alerts server: no ChatGPT apps/connectors, plugins, or browser tools.
+[features]
+apps = false
+plugins = false
+remote_plugin = false
+browser_use = false
+computer_use = false
+in_app_browser = false
+
+[mcp_servers.alerts]
+command = "node"
+args = ["mcp-server/dist/index.js"]
+# Forwarded by name from the launching shell; the URL never appears in this file.
+env_vars = ["PRISMATIC_ALERT_WEBHOOK_URL", "ALERT_DRY_RUN"]
+default_tools_approval_mode = "prompt"

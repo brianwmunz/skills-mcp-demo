@@ -1,0 +1,19 @@
+{
+  "event": "instance.execution.failed",
+  "occurredAt": "2026-10-14T15:42:07Z",
+  "customer": { "name": "Acme Corp", "externalId": "acme-corp" },
+  "integration": { "name": "Salesforce Sync", "version": 12 },
+  "instance": {
+    "id": "SW5zdGFuY2U6N2Y0YzJhOTEtM2IxZC00ZTg4",
+    "environment": "production"
+  },
+  "failures": { "lastHour": 3, "consecutive": 3 },
+  "lastError": {
+    "step": "Fetch Updated Contacts",
+    "httpStatus": 401,
+    "errorCode": "INVALID_SESSION_ID",
+    "message": "Session expired or invalid"
+  },
+  "lastSuccessfulRunAt": "2026-10-14T12:15:03Z",
+  "recordsPending": 1284
+}

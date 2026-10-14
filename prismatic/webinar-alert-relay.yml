@@ -1,0 +1,92 @@
+category: Messaging
+configPages:
+  - elements:
+      - type: configVar
+        value: Slack Webhook
+    name: Configuration
+definitionVersion: 7
+description: Receives alerts from the send_alert MCP tool and posts them to Slack.
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: "Format an incoming alert and post it to #webinar-alerts."
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Send Alert
+    steps:
+      - action:
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: 15
+          key: webhook
+        description: Receives { severity, title, message, integration, sentAt }
+        inputs: {}
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: 33
+          key: replaceMultipleSubstring
+        description: critical → 🔴, warning → 🟠, info → 🔵
+        inputs:
+          text:
+            type: template
+            value: "{{$integrationTrigger.results.body.data.severity}}"
+          replaceMultiple:
+            type: complex
+            value:
+              - name: critical
+                type: value
+                value: 🔴
+              - name: warning
+                type: value
+                value: 🟠
+              - name: info
+                type: value
+                value: 🔵
+        name: Severity Emoji
+      - action:
+          component:
+            isPublic: true
+            key: slack
+            version: 114
+          key: postSlackMessage
+        description: "Post the formatted alert to #webinar-alerts"
+        inputs:
+          connection:
+            type: configVar
+            value: Slack Webhook
+          message:
+            type: template
+            value: |-
+              {{$severityEmoji.results}} *{{$integrationTrigger.results.body.data.title}}*
+              {{$integrationTrigger.results.body.data.message}}
+              _{{$integrationTrigger.results.body.data.integration}} · {{$integrationTrigger.results.body.data.severity}}_
+        name: Post to Slack
+name: Webinar Alert Relay
+requiredConfigVars:
+  - key: Slack Webhook
+    dataType: connection
+    connection:
+      component:
+        isPublic: true
+        key: slack
+        version: 114
+      key: webhookUrl
+    description: "Slack incoming webhook URL for #webinar-alerts"
+    inputs:
+      webhookUrl:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ""
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false

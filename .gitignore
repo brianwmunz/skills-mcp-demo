@@ -1,0 +1,11 @@
+.env
+node_modules/
+mcp-server/dist/
+.DS_Store
+# Per-machine Claude Code approvals survive resets
+.claude/settings.local.json
+# Pre-run comparison outputs survive resets (git clean skips ignored files)
+comparison/*
+!comparison/.gitkeep
+# Run sheet and other docs survive resets
+*.pdf
