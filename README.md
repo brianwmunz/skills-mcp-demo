@@ -49,7 +49,7 @@ The skill and MCP server work the same either way. Only the last hop changes.
 | [Claude Code](https://docs.claude.com/en/docs/claude-code) | Yes | The `claude` CLI. Codex CLI works too (see [Bonus](#bonus-same-skill-and-server-in-codex)). |
 | Node.js 20+ and git | Yes | To build the MCP server. |
 | A Slack workspace | Yes | Somewhere you're allowed to add an incoming webhook. A test workspace is ideal. |
-| A Prismatic account | Recommended | For the Prismatic path. See [docs/prismatic.md](docs/prismatic.md). |
+| A Prismatic account | Recommended | For the Prismatic path. No account? [Start a free trial](https://prismatic.io/free-trial/?utm_source=github&utm_medium=social&utm_campaign=2026-q4-skills-mcp-webinar&utm_content=readme). Setup: [docs/prismatic.md](docs/prismatic.md). |
 | [`skills-ref`](https://github.com/agentskills/agentskills) | Optional | Validates your skill: `uv tool install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"` |
 
 You don't need Slack or Prismatic to start. Building the skill and server works offline, and dry-run mode
