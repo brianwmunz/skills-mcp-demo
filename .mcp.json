@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "alerts": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp-server/dist/index.js"
+      ],
+      "env": {
+        "PRISMATIC_ALERT_WEBHOOK_URL": "${PRISMATIC_ALERT_WEBHOOK_URL}",
+        "ALERT_DRY_RUN": "${ALERT_DRY_RUN:-0}"
+      }
+    }
+  }
+}
